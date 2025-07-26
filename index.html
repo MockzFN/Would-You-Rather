@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Would You Rather?</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+        
+        .game-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 800px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #ff6b6b, #ffd93d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+        
+        .question-container {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .question-text {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 30px;
+            line-height: 1.3;
+        }
+        
+        .options-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .option-button {
+            flex: 1;
+            min-width: 250px;
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            border: none;
+            border-radius: 15px;
+            padding: 20px;
+            color: white;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .option-button:nth-child(2) {
+            background: linear-gradient(45deg, #4834d4, #686de0);
+        }
+        
+        .option-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .option-button:active {
+            transform: translateY(0);
+        }
+        
+        .stats-container {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #ffd93d;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+        
+        .control-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        
+        .control-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            padding: 12px 24px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1em;
+        }
+        
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .choice-feedback {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            font-style: italic;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .choice-feedback.show {
+            opacity: 1;
+        }
+        
+        @media (max-width: 600px) {
+            .options-container {
+                flex-direction: column;
+            }
+            
+            .option-button {
+                min-width: auto;
+            }
+            
+            h1 {
+                font-size: 2.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>Would You Rather?</h1>
+        <p class="subtitle">Choose your destiny, one impossible decision at a time!</p>
+        
+        <div class="stats-container">
+            <div class="stat">
+                <div class="stat-number" id="questionsAnswered">0</div>
+                <div class="stat-label">Questions Answered</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number" id="currentQuestion">1</div>
+                <div class="stat-label">Current Question</div>
+            </div>
+        </div>
+        
+        <div class="question-container">
+            <div class="question-text" id="questionText">Loading your dilemma...</div>
+            <div class="options-container">
+                <button class="option-button" id="optionA" onclick="makeChoice('A')">Option A</button>
+                <button class="option-button" id="optionB" onclick="makeChoice('B')">Option B</button>
+            </div>
+        </div>
+        
+        <div class="control-buttons">
+            <button class="control-btn" onclick="resetGame()">Start Over</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            { question: "Would you rather have the ability to fly or be invisible?", optionA: "Have the ability to fly", optionB: "Be invisible" },
+            { question: "Would you rather always have to tell the truth or always have to lie?", optionA: "Always tell the truth", optionB: "Always lie" },
+            { question: "Would you rather live in a world without music or without movies?", optionA: "World without music", optionB: "World without movies" },
+            { question: "Would you rather have the power to read minds or see the future?", optionA: "Read minds", optionB: "See the future" },
+            { question: "Would you rather live forever or die tomorrow?", optionA: "Live forever", optionB: "Die tomorrow" },
+            { question: "Would you rather be incredibly wealthy but alone or poor but surrounded by loving family and friends?", optionA: "Wealthy but alone", optionB: "Poor but loved" },
+            { question: "Would you rather have the ability to time travel or teleport?", optionA: "Time travel", optionB: "Teleport" },
+            { question: "Would you rather never be able to use the internet again or never be able to watch TV/movies again?", optionA: "No internet", optionB: "No TV/movies" },
+            { question: "Would you rather be able to speak every language fluently or play every musical instrument perfectly?", optionA: "Speak every language", optionB: "Play every instrument" },
+            { question: "Would you rather live in a house by the ocean or in a cabin in the mountains?", optionA: "House by the ocean", optionB: "Cabin in the mountains" },
+            { question: "Would you rather have super strength or super speed?", optionA: "Super strength", optionB: "Super speed" },
+            { question: "Would you rather be able to control fire or control water?", optionA: "Control fire", optionB: "Control water" },
+            { question: "Would you rather never have to sleep or never have to eat?", optionA: "Never sleep", optionB: "Never eat" },
+            { question: "Would you rather be famous for something terrible or forgotten completely?", optionA: "Famous for something terrible", optionB: "Forgotten completely" },
+            { question: "Would you rather have a rewind button for your life or a pause button?", optionA: "Rewind button", optionB: "Pause button" },
+            { question: "Would you rather live in the past or the future?", optionA: "Live in the past", optionB: "Live in the future" },
+            { question: "Would you rather be able to breathe underwater or survive in space?", optionA: "Breathe underwater", optionB: "Survive in space" },
+            { question: "Would you rather have unlimited money or unlimited time?", optionA: "Unlimited money", optionB: "Unlimited time" },
+            { question: "Would you rather be able to talk to animals or speak all human languages?", optionA: "Talk to animals", optionB: "Speak all languages" },
+            { question: "Would you rather live without your phone or without your computer?", optionA: "Without phone", optionB: "Without computer" },
+            { question: "Would you rather have the ability to heal others or have perfect health yourself?", optionA: "Heal others", optionB: "Perfect health" },
+            { question: "Would you rather be the smartest person alive or the most attractive?", optionA: "Smartest person", optionB: "Most attractive" },
+            { question: "Would you rather live in a world with no problems or a world where you rule?", optionA: "World with no problems", optionB: "World where you rule" },
+            { question: "Would you rather have x-ray vision or the ability to become giant-sized?", optionA: "X-ray vision", optionB: "Become giant-sized" },
+            { question: "Would you rather never be able to lie or never be able to tell the truth?", optionA: "Never lie", optionB: "Never tell truth" },
+            { question: "Would you rather have the power to change the past or see into the future?", optionA: "Change the past", optionB: "See the future" },
+            { question: "Would you rather be able to stop time or travel at light speed?", optionA: "Stop time", optionB: "Travel at light speed" },
+            { question: "Would you rather have a photographic memory or be able to forget anything you want?", optionA: "Photographic memory", optionB: "Forget anything" },
+            { question: "Would you rather be feared by all or loved by all?", optionA: "Feared by all", optionB: "Loved by all" },
+            { question: "Would you rather live in a utopia as a normal person or a dystopia as the supreme ruler?", optionA: "Utopia as normal person", optionB: "Dystopia as ruler" },
+            { question: "Would you rather have unlimited wishes but they all backfire or have one perfect wish?", optionA: "Unlimited wishes", optionB: "One perfect wish" },
+            { question: "Would you rather be able to control gravity or control time?", optionA: "Control gravity", optionB: "Control time" },
+            { question: "Would you rather live in a simulation knowing it's fake or reality thinking it might be fake?", optionA: "Simulation knowing it's fake", optionB: "Reality thinking it's fake" },
+            { question: "Would you rather have wings but be unable to fly or be able to fly but have no wings?", optionA: "Wings but can't fly", optionB: "Fly but no wings" },
+            { question: "Would you rather be immortal but age normally or age backwards but die young?", optionA: "Immortal but age", optionB: "Age backwards" },
+            { question: "Would you rather have super hearing or super vision?", optionA: "Super hearing", optionB: "Super vision" },
+            { question: "Would you rather be able to create anything or destroy anything?", optionA: "Create anything", optionB: "Destroy anything" },
+            { question: "Would you rather know when you're going to die or how you're going to die?", optionA: "When you'll die", optionB: "How you'll die" },
+            { question: "Would you rather live without hot water or without air conditioning/heating?", optionA: "Without hot water", optionB: "Without AC/heating" },
+            { question: "Would you rather have taste buds in your fingers or have your tongue in your fingertips?", optionA: "Taste buds in fingers", optionB: "Tongue in fingertips" },
+            { question: "Would you rather fight 100 duck-sized horses or 1 horse-sized duck?", optionA: "100 duck-sized horses", optionB: "1 horse-sized duck" },
+            { question: "Would you rather sweat maple syrup or have your tears be hot sauce?", optionA: "Sweat maple syrup", optionB: "Tears are hot sauce" },
+            { question: "Would you rather have to sing everything you say or dance everywhere you go?", optionA: "Sing everything", optionB: "Dance everywhere" },
+            { question: "Would you rather be able to only whisper or only shout?", optionA: "Only whisper", optionB: "Only shout" },
+            { question: "Would you rather have fingers as long as legs or legs as short as fingers?", optionA: "Fingers as long as legs", optionB: "Legs as short as fingers" },
+            { question: "Would you rather have a head the size of a tennis ball or the size of a watermelon?", optionA: "Tennis ball head", optionB: "Watermelon head" },
+            { question: "Would you rather be able to change colors like a chameleon or regenerate like a lizard?", optionA: "Change colors", optionB: "Regenerate limbs" },
+            { question: "Would you rather have constant hiccups or constantly feel like you need to sneeze?", optionA: "Constant hiccups", optionB: "Need to sneeze" },
+            { question: "Would you rather have your body covered in scales or covered in fur?", optionA: "Covered in scales", optionB: "Covered in fur" },
+            { question: "Would you rather only be able to eat foods that are blue or foods that are perfectly round?", optionA: "Only blue foods", optionB: "Only round foods" },
+            { question: "Would you rather live in a treehouse or in a cave?", optionA: "Live in treehouse", optionB: "Live in cave" },
+            { question: "Would you rather have pizza for hands or hammers for feet?", optionA: "Pizza hands", optionB: "Hammer feet" },
+            { question: "Would you rather speak in rhyme all the time or sing instead of speaking?", optionA: "Speak in rhyme", optionB: "Sing instead of speak" },
+            { question: "Would you rather be a famous director or a famous actor?", optionA: "Famous director", optionB: "Famous actor" },
+            { question: "Would you rather live in the Harry Potter universe or the Star Wars universe?", optionA: "Harry Potter universe", optionB: "Star Wars universe" },
+            { question: "Would you rather have the ability to pause real life or fast forward through boring parts?", optionA: "Pause real life", optionB: "Fast forward boring parts" },
+            { question: "Would you rather be stuck in a romantic comedy or a horror movie?", optionA: "Romantic comedy", optionB: "Horror movie" },
+            { question: "Would you rather be a vampire or a werewolf?", optionA: "Vampire", optionB: "Werewolf" },
+            { question: "Would you rather have your own personal theme song or your own personal narrator?", optionA: "Personal theme song", optionB: "Personal narrator" },
+            { question: "Would you rather be able to control electronics with your mind or never have technology break on you?", optionA: "Control electronics", optionB: "Tech never breaks" },
+            { question: "Would you rather have unlimited free pizza for life or unlimited free ice cream for life?", optionA: "Unlimited pizza", optionB: "Unlimited ice cream" },
+            { question: "Would you rather be able to talk to your past self or your future self?", optionA: "Talk to past self", optionB: "Talk to future self" },
+            { question: "Would you rather have a personal chef or a personal trainer?", optionA: "Personal chef", optionB: "Personal trainer" },
+            { question: "Would you rather live in a world where everyone looks the same or everyone thinks the same?", optionA: "Everyone looks same", optionB: "Everyone thinks same" },
+            { question: "Would you rather be able to multiply yourself or divide yourself in half?", optionA: "Multiply yourself", optionB: "Divide in half" },
+            { question: "Would you rather have your dream job but terrible pay or terrible job but amazing pay?", optionA: "Dream job, bad pay", optionB: "Bad job, great pay" },
+            { question: "Would you rather be the funniest person alive or the most intelligent person alive?", optionA: "Funniest person", optionB: "Most intelligent" },
+            { question: "Would you rather have access to everyone's search history or everyone's photo gallery?", optionA: "Search history", optionB: "Photo gallery" },
+            { question: "Would you rather be able to see 10 minutes into the future or 10 years into the future?", optionA: "10 minutes future", optionB: "10 years future" },
+            { question: "Would you rather have a pet dragon or a pet unicorn?", optionA: "Pet dragon", optionB: "Pet unicorn" },
+            { question: "Would you rather be able to create new colors or create new sounds?", optionA: "Create new colors", optionB: "Create new sounds" },
+            { question: "Would you rather have unlimited battery life on all devices or unlimited data/wifi everywhere?", optionA: "Unlimited battery", optionB: "Unlimited data" },
+            { question: "Would you rather be able to make anyone laugh or make anyone fall asleep?", optionA: "Make anyone laugh", optionB: "Make anyone sleep" },
+            { question: "Would you rather live without chocolate or without cheese?", optionA: "Without chocolate", optionB: "Without cheese" },
+            { question: "Would you rather have a magic carpet or seven-league boots?", optionA: "Magic carpet", optionB: "Seven-league boots" },
+            { question: "Would you rather be able to control your dreams or other people's dreams?", optionA: "Control your dreams", optionB: "Control others' dreams" },
+            { question: "Would you rather have perfect memory of the past or perfect intuition about the future?", optionA: "Perfect memory", optionB: "Perfect intuition" },
+            { question: "Would you rather be able to speak to machines or speak to plants?", optionA: "Speak to machines", optionB: "Speak to plants" },
+            { question: "Would you rather have the ability to learn any skill instantly or master any skill with just one hour of practice?", optionA: "Learn instantly", optionB: "Master in one hour" },
+            { question: "Would you rather live in a world without pain or a world without fear?", optionA: "World without pain", optionB: "World without fear" },
+            { question: "Would you rather be able to turn invisible but only when nobody is looking or fly but only one inch off the ground?", optionA: "Invisible when not watched", optionB: "Fly one inch high" },
+            { question: "Would you rather have a third arm or a third eye?", optionA: "Third arm", optionB: "Third eye" },
+            { question: "Would you rather be able to breathe fire or shoot ice from your hands?", optionA: "Breathe fire", optionB: "Shoot ice" },
+            { question: "Would you rather have all traffic lights you approach be green or never have to stand in line again?", optionA: "Green traffic lights", optionB: "Never wait in line" },
+            { question: "Would you rather be able to eat anything without gaining weight or never need to sleep?", optionA: "Eat without weight gain", optionB: "Never need sleep" },
+            { question: "Would you rather have a mansion in the middle of nowhere or a tiny apartment in the heart of the city?", optionA: "Mansion in nowhere", optionB: "Tiny city apartment" },
+            { question: "Would you rather be able to make anyone agree with you or make anyone like you?", optionA: "Make anyone agree", optionB: "Make anyone like you" },
+            { question: "Would you rather have the power to make it rain or make it sunny whenever you want?", optionA: "Control rain", optionB: "Control sunshine" },
+            { question: "Would you rather be able to walk through walls or walk on water?", optionA: "Walk through walls", optionB: "Walk on water" },
+            { question: "Would you rather have a personal robot or a personal genie?", optionA: "Personal robot", optionB: "Personal genie" },
+            { question: "Would you rather be able to taste colors or see sounds?", optionA: "Taste colors", optionB: "See sounds" },
+            { question: "Would you rather have perfect pitch or perfect rhythm?", optionA: "Perfect pitch", optionB: "Perfect rhythm" },
+            { question: "Would you rather be able to run at 100 mph or jump 50 feet high?", optionA: "Run 100 mph", optionB: "Jump 50 feet" },
+            { question: "Would you rather have hands that kept growing or feet that kept growing?", optionA: "Hands keep growing", optionB: "Feet keep growing" },
+            { question: "Would you rather be followed by a mariachi band or a news crew for one day?", optionA: "Mariachi band", optionB: "News crew" },
+            { question: "Would you rather have a permanent unibrow or permanently visible nose hair?", optionA: "Permanent unibrow", optionB: "Visible nose hair" },
+            { question: "Would you rather only be able to communicate through emoji or only be able to communicate through interpretive dance?", optionA: "Only emoji", optionB: "Only interpretive dance" },
+            { question: "Would you rather have your thoughts appear in thought bubbles above your head or have everything you say appear as text?", optionA: "Thought bubbles", optionB: "Speech as text" },
+            { question: "Would you rather be able to teleport but arrive naked or fly but very slowly?", optionA: "Teleport naked", optionB: "Fly slowly" },
+            { question: "Would you rather have to wear clown shoes every day or a clown nose every day?", optionA: "Clown shoes", optionB: "Clown nose" },
+            { question: "Would you rather have fingers for toes or toes for fingers?", optionA: "Fingers for toes", optionB: "Toes for fingers" },
+            { question: "Would you rather be able to only use a fork or only use a spoon for the rest of your life?", optionA: "Only fork", optionB: "Only spoon" },
+            { question: "Would you rather have a voice that sounds like a cartoon chipmunk or a voice like a movie trailer narrator?", optionA: "Cartoon chipmunk", optionB: "Movie trailer narrator" },
+            { question: "Would you rather have all your clothes be plaid or all your clothes be polka-dotted?", optionA: "All plaid", optionB: "All polka-dotted" },
+            { question: "Would you rather have a built-in calculator in your brain or a built-in dictionary?", optionA: "Built-in calculator", optionB: "Built-in dictionary" }
+        ];
+
+        let currentQuestionIndex = 0;
+        let questionsAnswered = 0;
+        let gameStats = { questionsAnswered: 0 };
+
+        function loadQuestion() {
+            if (currentQuestionIndex >= questions.length) {
+                currentQuestionIndex = 0; // Loop back to start
+            }
+
+            const question = questions[currentQuestionIndex];
+            document.getElementById('questionText').textContent = question.question;
+            document.getElementById('optionA').textContent = question.optionA;
+            document.getElementById('optionB').textContent = question.optionB;
+            document.getElementById('currentQuestion').textContent = currentQuestionIndex + 1;
+        }
+
+        function makeChoice(choice) {
+            questionsAnswered++;
+            document.getElementById('questionsAnswered').textContent = questionsAnswered;
+            
+            // Add some visual feedback to the clicked button
+            const clickedButton = choice === 'A' ? document.getElementById('optionA') : document.getElementById('optionB');
+            clickedButton.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                clickedButton.style.transform = '';
+                // Go to next question after animation
+                nextQuestion();
+            }, 150);
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            loadQuestion();
+        }
+
+        function resetGame() {
+            currentQuestionIndex = 0;
+            questionsAnswered = 0;
+            document.getElementById('questionsAnswered').textContent = questionsAnswered;
+            loadQuestion();
+        }
+
+        // Initialize the game
+        loadQuestion();
+    </script>
+</body>
+</html>
